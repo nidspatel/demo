@@ -1,0 +1,116 @@
+/*------------------------------------------------------------------------------------------------------------------
+GET PRODUCT COLLECTION OF PARTICULAR CATEGORY N CONFIGURABLE
+$currcategory=83;
+$category = Mage::getModel('catalog/category')->load($currcategory);
+  $productCollection = Mage::getResourceModel('catalog/product_collection')
+                         ->addCategoryFilter($category)
+                         ->addAttributeToSelect('entity_id')
+                         ->addAttributeToFilter('type_id', array('eq' => 'configurable'))
+                         ->addFieldToFilter('status', 1);
+  $productCollection->setVisibility(Mage::getSingleton('catalog/product_visibility')->getVisibleInCatalogIds()); 
+
+/*--------------------------------------------------------------------------------------------------------------------
+
+
+/*------------------------------------------------------------------------------------------------------------------
+GET CHILD PRODUCT
+$childIds = Mage::getModel('catalog/product_type_configurable')
+      	    ->getChildrenIds($_product->getId());
+
+/*------------------------------------------------------------------------------------------------------------------
+
+
+/*------------------------------------------------------------------------------------------------------------------
+GET  PRODUCT CHILD PRODUCT
+
+$currcategory==83;
+$category = Mage::getModel('catalog/category')->load($currcategory);
+$productCollection = Mage::getResourceModel('catalog/product_collection')
+                     ->addCategoryFilter($category)
+                     ->addAttributeToSelect('entity_id')
+                     ->addAttributeToFilter('type_id', array('eq' => 'configurable'))
+                     ->addFieldToFilter('status', 1);
+$productCollection->setVisibility(Mage::getSingleton('catalog/product_visibility')->getVisibleInCatalogIds());   
+foreach($productCollection as $_product) {    
+	$childProducts = Mage::getModel('catalog/product_type_configurable')                            
+	            ->getUsedProductCollection($_product)
+	            ->addAttributeToSelect('parent_id')
+	            ->addAttributeToFilter('underwear_size',array('eq'=>$underwear_size));
+	$childProducts->load();
+}
+/*------------------------------------------------------------------------------------------------------------------
+
+
+
+/*------------------------------------------------------------------------------------------------------------------
+GET PARTICULAR IDS PRODUCT COLLECTION
+//get values of current page. if not the param value then it will set to 1
+$page=($this->getRequest()->getParam('p'))? $this->getRequest()->getParam('p') : 1;
+//get values of current limit. if not the param value then it will set to 1
+$pageSize=($this->getRequest()->getParam('limit'))? $this->getRequest()->getParam('limit') : 18;
+
+$productids=array(1,2);
+    $_productCollection = Mage::getModel('catalog/product')->getCollection()
+    ->addAttributeToSelect('*')
+    ->addFieldToFilter('entity_id', array('in'=> $productids))
+    ->addFieldToFilter('status', 1);
+    $_productCollection->setVisibility(Mage::getSingleton('catalog/product_visibility')->getVisibleInCatalogIds());
+    $_productCollection->setPageSize($pageSize);
+    $_productCollection->setCurPage($page);
+    $_productCollection->load();
+/*------------------------------------------------------------------------------------------------------------------
+
+
+/*------------------------------------------------------------------------------------------------------------------
+CUSTOM COLLECTION TOOLBAR PAGINATION SET
+
+$_helper = $this->helper('catalog/output');
+$this->setData('column_count',3);
+$toolbar = $this->getToolbarBlock();
+$toolbar->setCollection($_productCollection);
+
+$this->setChild('toolbar', $toolbar);   
+/*------------------------------------------------------------------------------------------------------------------
+
+
+/*------------------------------------------------------------------------------------------------------------------
+GET COLUMN VALUE IN ARRAY
+
+ $productCollection = Mage::getModel('catalog/product')->getCollection()
+    ->addAttributeToSelect('parent_id')
+    ->addFieldToFilter('entity_id', array('in'=> $childids))
+    ->addAttributeToFilter('underwear_size',array('eq'=>$underwear_size));
+    $productCollection->load();
+    $productids=$productCollection->getColumnValues('entity_id');
+/*------------------------------------------------------------------------------------------------------------------
+
+/*------------------------------------------------------------------------------------------------------------------
+get configurable product id from its simple product
+    $parentIds = Mage::getResourceSingleton('catalog/product_type_configurable')
+    ->getParentIdsByChild($productids);
+    $parentids=array_unique($parentIds);
+/*------------------------------------------------------------------------------------------------------------------
+
+=======================================================
+Add a script on cms page
+
+Ad new cms => Design => layout/xml
+ <reference name="head">
+    <block type="core/text" name="anal-expe.js" >
+        <action method="setText">
+            <text>
+                <![CDATA[
+                    <script type="text/javascript">
+jQuery(".common_recipe a").click(function(event){
+event.preventDefault();
+    var href = this.href;
+jQuery('html, body').animate({
+        scrollTop: jQuery(jQuery.attr(this, 'href')).offset().top
+    }, 1000);
+   });
+                    </script>
+                ]]>
+            </text>
+        </action>
+    </block>
+</reference>

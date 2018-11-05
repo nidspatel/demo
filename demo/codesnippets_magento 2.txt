@@ -1,0 +1,739 @@
+create custom payment method 
+https://www.classyllama.com/blog/how-to-create-payment-method-magento-2
+https://www.emiprotechnologies.com/technical_notes/magento-technical-notes-60/post/how-to-add-custom-payment-method-in-magento-2-441
+
+get form key
+$objectManager = \Magento\Framework\App\ObjectManager::getInstance(); 
+$FormKey = $objectManager->get('Magento\Framework\Data\Form\FormKey');
+<input type="hidden" name="form_key" value="<?php echo $FormKey->getFormKey(); ?>" />
+
+GET PRODUCT BY SKU
+$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+$productRepository = $objectManager->get('\Magento\Catalog\Model\ProductRepository');
+$productObj = $productRepository->get($block->escapeHtml($block->getSku($_item)));
+$skylinkproductid=$productObj->getId();
+===============================
+google api key AIzaSyDkWCfSEHQDJapzQctS7QQ7E9Qx86C3KDM
+				AIzaSyAOCQw7yfdNGsBO3UV278iTDqerZZiqvfQ
+
+https://console.developers.google.com/apis/credentials?authuser=0&project=test-api-216405&pli=1
+===============================
+
+GET BASEURL IN ADMIN
+{{config path="web/secure/base_url"}}
+
+
+================================================
+SMTP PORT CONGIGURATION
+https://support.hostgator.com/articles/specialized-help/technical/commonly-used-port-numbers
+================================================
+/*------------------------------
+MODULE CREATOR ONLINE => ADMIN AND FRONT BOTH
+https://cedcommerce.com/magento-2-module-creator/
+
+*/------------------------------
+
+https://belvg.com/magento2-development 
+
+========================================
+Add button om minicart
+https://magento.stackexchange.com/questions/184501/how-to-add-empty-cart-button-to-minicart
+
+========================================
+---------------------------------------------
+Logger
+\Magento\Framework\App\ObjectManager::getInstance()
+    ->get('Psr\Log\LoggerInterface')
+        ->debug('arround save method called');
+---------------------------------------------
+------------------------------------------------------------------------------------------------------------
+GET STORE INFORMATION
+$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+$storeManager = $objectManager->get('Magento\Store\Model\StoreManagerInterface'); 
+$storeId = $storeManager->getStore()->getId();
+
+------------------------------------------------------------------------------------------------------------
+
+get Image set in module 
+<?php echo $this->getViewFileUrl('VrayInc_Vray::images/VRAY_button.jpeg'); ?>
+------------------------------------------------------------------------------------------------------------
+UPDATE ATTRIBUTE VALUE OF PRODUCT
+$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+$storeManager = $objectManager->get('Magento\Store\Model\StoreManagerInterface'); 
+$currentStore = $storeManager->getStore()->getId();
+$action=$objectManager->create('\Magento\Catalog\Model\ResourceModel\Product\Action');
+$action->updateAttributes([$stockItem->getProductId()], array('stock' => 'No'), $currentStore);
+-------------------------------------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------------------------------------
+OVERRIDE CORE FILE WITHOUT OVERRIDING CONTENT OF CORE FILE JUST ADD NEW CONTENT WITHIN BLOCK
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="1column" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceContainer class="Magento\Checkout\Block\Cart" name="checkout.cart.methods">
+        		 <block  class="Magento\Checkout\Block\Cart" name="my.button" as="my.button" after="checkout.cart.methods.onepage.bottom" template="VrayInc_Vray::cart/button.phtml"/>
+        </referenceContainer>
+    </body>
+</page>
+
+-------------------------------------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------------------------------------
+CREATE CUSTOM CONFIGURATION SETTING IN ADMIN PANEL
+https://www.mageplaza.com/magento-2-module-development/create-system-xml-configuration-magento-2.html
+-------------------------------------------------------------------------------------------------------------
+
+
+
+-------------------------------------------------------------------------------------------------------------
+IN OBSERVER GET PRODUCT DETAILS
+$stockItem = $observer->getEvent()->getItem();
+$qty=$stockItem->getQty(); // for qty
+$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+$storeManager = $objectManager->get('Magento\Store\Model\StoreManagerInterface'); 
+$currentStore = $storeManager->getStore()->getId();
+$action = $objectManager->create('Magento\Catalog\Model\Product\Action');
+$eavConfig=$objectManager->create('\Magento\Eav\Model\Config');
+$attribute = $eavConfig->getAttribute('catalog_product', 'stock');
+
+if($qty==0 || $stockItem->getIsInStock() ==0){
+	//update attribute value stock as no
+	$option_id = $attribute->getSource()->getOptionId('No');
+	$action->updateAttributes([$stockItem->getProductId()], array('stock' => $option_id), $currentStore);
+}
+if($qty > 0 && $stockItem->getIsInStock() ==1){
+	$option_id = $attribute->getSource()->getOptionId('Yes');
+	$action->updateAttributes([$stockItem->getProductId()], array('stock' => $option_id), $currentStore);
+}
+---------------------------------------------------------------------------------------------------------------
+
+----------------------------------------------------------------------------------------------------------------
+ATTRIBUTE OPTION ID OR OPTION TEXT
+$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+$eavConfig=$objectManager->create('\Magento\Eav\Model\Config');
+$attribute = $eavConfig->getAttribute('catalog_product', 'stock'); //CHANGE ATTRIBUTE NAME
+$option_id = $attribute->getSource()->getOptionId('No');//change WITH YOUR OPTION VALUE
+$option_text = $attribute->getSource()->getOptionText(48); // CHANGE WITH YOUR OPTION ID
+----------------------------------------------------------------------------------------------------------------
+
+
+----------------------------------------------------------------
+GET STOCK INFORMATION OF PARTICULAR PRODUCT
+
+$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+$StockItemRepository = $objectManager->get('\Magento\CatalogInventory\Model\Stock\StockItemRepository');
+$stockitem=$StockItemRepository->get($product->getId());
+print_r($stockitem->toArray());
+
+-----------------------------------------------------------------
+
+-----------------------------------------------------------------------------------------------------------------------------
+SETUP X THRESHOLD QTY 
+
+on Product Detail Page :
+	CONFIGURATION FROM ADMIN PANEL
+		Store->Configuration->Catalog->Inventory->change threhold qty
+	
+on cart detail page :
+
+file to be modify path : Magento_Checkout/view/frontend/templates/cart/item/default.phtml
+Reference Core file : vendor/catalog-inventory/view/frontend/templates/stockqty/default.phtml
+					  vendor/catalog-inventory/BlockStockqty/AbstractStockqty
+
+$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+$stockregistry=$objectManager->get('\Magento\CatalogInventory\Api\StockRegistryInterface');
+$stockitem=$stockregistry->getStockItem($product->getId());
+$stockQty=$stockregistry->getStockStatus($product->getId(), $product->getStore()->getWebsiteId())->getQty();
+$minStockQty = $stockitem->getMinQty();
+$stockQtyLeft=$stockQty-$minStockQty;
+$scopeConfig=$objectManager->get('\Magento\Framework\App\Config\ScopeConfigInterface');
+$thresholdQty = (float)$scopeConfig->getValue('cataloginventory/options/stock_threshold_qty',
+    \Magento\Store\Model\ScopeInterface::SCOPE_STORE
+);
+
+
+if($stockQty > 0 && $stockQtyLeft <= $thresholdQty){ 
+ <div class="availability only" title="<?php /* @escapeNotVerified */ echo __('Only %1 left', ($stockQtyLeft)) ?>">
+    <?php /* @escapeNotVerified */ echo __('Only %1 left', "<strong>{$stockQtyLeft}</strong>") ?>
+</div>
+}
+
+
+OVERRIDE FILE
+https://magento.stackexchange.com/questions/203510/override-default-only-x-left-message
+-------------------------------------------------------------------------------------------------------------------------------
+
+
+-------------------------------------------------------------------------------------------------------------------------------
+DATAPROVIDER FILE :
+
+vendor/magento/module-catalog-search/Model/Adapter/Mysql/Aggregation/DataProvider.php
+
+-------------------------------------------------------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------------------------------------------------------
+OVERRIDE CORE FILES :
+
+di.xml
+<preference for="Magento\CatalogSearch\Model\Adapter\Mysql\Aggregation\DataProvider" type="Dynamic\Btxmyfiles\Model\Adapter\Mysql\Aggregation\DataProvider" /> 
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+***********************************************
+INCLUDE JQUERY IN MAGENTO 2
+require([ 'jquery', 'jquery/ui'], function($){
+
+});
+***********************************************
+
+
+************************************************************************************************************
+STATIC BLOCK
+
+	ADMIN STATICBLOCK
+		After using the block code phtml file will be called on catalog product listing
+			{{block type="catalog/product_list" category_id="83" template="product/featuredproduct.phtml"}}
+
+		After using the block code phtml file will be called on cms page
+			{{block class="Magento\Framework\View\Element\Template" template="Vendor_Module::myfiles/myfile.phtml"}}
+
+		{{block class="Magento\CatalogSearch\Block\Advanced\Form" name="block_name" template="Magento_CatalogSearch::advanced/form.phtml"}}
+
+		Called custom Block n Custom Phtml file
+		{{block class="Ashore\Faq\Block\Faq\Index" name="Faq" template="Ashore_Faq::faq/index.phtml"}}
+
+	IN XML FILE
+		<referenceContainer name="content">		    
+		    <block class="Magento\Cms\Block\Block" name="freefreight_block" before="-" >
+		        <arguments>
+		            <argument name="block_id" xsi:type="string">freefreight_block</argument>
+		        </arguments>
+		    </block>
+		    <!-- CUSTOM BLOCK WITH CUSTOM PHTML FILE -->
+		    <block class="Dynamic\Customization\Block\Featuredproduct" name="home_featured_product">
+		        <arguments>
+		            <argument name="template" xsi:type="string">Magento_Cms::featured_product.phtml</argument>
+		        </arguments>
+		    </block>
+		</referenceContainer>
+
+	IN PHTML
+		<?php echo $block->getLayout()->createBlock('Magento\Cms\Block\Block')->setBlockId('soapdispensercontent')->toHtml();?>
+
+	IN CONTROLLER
+		 $output = $this->layoutFactory->create()
+        ->createBlock('Magento\Backend\Block\Dashboard\Tab\Customers\Newest')
+        ->toHtml();
+	    $resultRaw = $this->resultRawFactory->create();
+	    return $resultRaw->setContents($output);
+
+	    OR
+
+	     $response = $this->resultFactory->create(ResultFactory::TYPE_PAGE);
+	    $layout = $response->addHandle('paypal_express_review_details')->getLayout();
+
+	    $response = $layout->getBlock('page.block')->toHtml();
+	    $this->getResponse()->setBody($response);
+	    return;
+
+	    $layout = $this->layoutFactory->create();
+	    $layout->getUpdate()->load(['checkout_onepage_progress']);
+	    $layout->generateXml();
+	    $layout->generateElements();
+
+	    $block = $layout->getBlock('progress')->setAttribute('next_step', $checkoutStep);
+	    return $block->toHtml();
+************************************************************************************************************
+
+-----------------------------------------------------------------------
+How to call a block method from a controller?
+	/** @var \Magento\Braintree\Block\Paypal\Checkout\Review $reviewBlock */
+	$reviewBlock = $resultPage->getLayout()->getBlock('braintree.paypal.review');
+
+	$reviewBlock->setQuote($quote);
+	$reviewBlock->getChildBlock('shipping_method')->setData('quote', $quote);
+
+-----------------------------------------------------------------------
+
+=================================
+SET IMAGE IN HTML FILE PATH
+<img data-bind="attr: { src: require.toUrl('VrayInc_Vray')+'/images/VRAY_button.jpeg' }">
+https://magento.stackexchange.com/questions/172722/how-to-specify-skin-image-path-in-knockout-html-template
+=================================
+form validation
+require([
+    'jquery',
+    'mage/validation'
+], function($){
+    $('#country').addClass('form-control');
+    var dataForm = $('#vray-form-validate');
+    var ignore = null;
+
+    dataForm.mage('validation', {
+        ignore: ignore ? ':hidden:not(' + ignore + ')' : ':hidden'
+    }).find('input:text').attr('autocomplete', 'off');
+
+    $('#continue_step1').click( function() { //can be replaced with any event
+        alert();
+        dataForm.validation('isValid'); //validates form and returns boolean
+    });
+});
+-------------------------------------------------------------------------------------------------------------
+ STATIC PAGE 
+
+	 IN PHTML FILE
+		<?php echo $this->getLayout()->createBlock("Magento\Framework\View\Element\Template")->setTemplate("Magento_Theme::test.phtml")->toHtml(); ?>
+
+	 IN XML
+		<block class="Magento\Framework\View\Element\Template" name="default_home_page" template="Magento_Cms::default/home.phtml"/>
+
+-------------------------------------------------------------------------------------------------------------
+
+*****************************************************************************************************
+SUCCESS ERROR MESSAGE
+
+$this->messageManager->addSuccessMessage('Best Seller');
+
+$this->messageManager->addSuccess(
+                    __('Delete successfully !')
+                );
+*****************************************************************************************************
+
+*******************************************************************************
+REDIRECT TO PAGE
+
+	BACK PAGE
+
+	use Magento\Framework\App\ResponseInterface;
+	use Magento\Framework\View\Result\PageFactory;
+
+	$resultRedirect = $this->resultRedirectFactory->create();
+	$resultRedirect->setRefererOrBaseUrl();
+	return $resultRedirect; 
+
+	SPECIFIC PAGE
+
+	$this->resultRedirectFactory->create()->setUrl('url'); 0r
+	return $this->resultRedirectFactory->create()->setPath('catalog/product/', ['_current' => true]);
+
+*******************************************************************************
+
+
+**************************************************************************
+MOVE ELEMENT IN XML
+
+ <move element="delivery_static" destination="header.panel" after="sw.topnav"/> 
+
+**************************************************************************
+
+=========================================================================
+LOGGER MESSAGE
+
+\Magento\Framework\App\ObjectManager::getInstance()
+    ->get('Psr\Log\LoggerInterface')
+        ->debug('message');
+
+$this->_logger->addDebug($message); // log location: var/log/system.log
+$this->_logger->addInfo($message); // log location: var/log/exception.log
+$this->_logger->addNotice($message); // log location: var/log/exception.log
+$this->_logger->addError($message); // log location: var/log/exception.log
+$this->_logger->critical($e); // log location: var/log/exception.log
+=========================================================================
+
+------------------------------------------------------------------------------
+firstaid project local /magento/firstaid219
+add a script tag before body over on each page
+
+1.) /app/design/frontend/{vendor}/{theme}/Magento_Theme/layout/default.xml
+add below tag :
+
+	<referenceContainer name="before.body.end">
+	    <block class="Magento\Framework\View\Element\Template" name="custom_inline_js" template="Magento_Theme::html/inline-js.phtml" before="-"/>
+	</referenceContainer>
+
+2.) create a inline-js.phtml file inside :/app/design/frontend/{vendor}/{theme}/Magento_Theme/html/inline-js.phtml
+	In inline-js.phtml add script tag such as ::
+	<script>
+	  window.dataLayer = window.dataLayer || [];
+	  function gtag(){dataLayer.push(arguments);}
+	  gtag('js', new Date());
+
+	  gtag('config', 'AW-1000806117');
+
+	   gtag('config', 'AW-1000806117/1Q31CLmz4WQQ5a2c3QM', {
+	    'phone_conversion_number': '03 5443 2239'
+	  });
+	  gtag('event', 'conversion', {'send_to': 'AW-1000806117/xmuUCJeuxmQQ5a2c3QM'});
+
+	</script>
+
+-------------------------------------------------------------------------------
+
+add a script tag within head tag on each page
+
+1. /app/design/frontend/{vendor}/{theme}/Magento_Theme/layout/default.xml
+add below tag :
+	<referenceContainer name="head.additional">
+     <block class="Magento\Framework\View\Element\Template" name="gtm.head" before="-" template="Magento_Theme::html/head.phtml" />
+    </referenceContainer>
+
+2.) create a head.phtml file inside :/app/design/frontend/{vendor}/{theme}/Magento_Theme/html/head.phtml
+	In head.phtml add script tag such as ::
+	<script>
+	  window.dataLayer = window.dataLayer || [];
+	  function gtag(){dataLayer.push(arguments);}
+	  gtag('js', new Date());
+
+	  gtag('config', 'AW-1000806117');
+
+	   gtag('config', 'AW-1000806117/1Q31CLmz4WQQ5a2c3QM', {
+	    'phone_conversion_number': '03 5443 2239'
+	  });
+	  gtag('event', 'conversion', {'send_to': 'AW-1000806117/xmuUCJeuxmQQ5a2c3QM'});
+
+	</script>
+-------------------------------------------------------------------------------
+
+-----------------------------------------------------------------
+add script after body start 
+
+    <referenceContainer name="after.body.start">
+        <block class="Magento\Framework\View\Element\Template" name="head.googletag" before="-" template="Magento_Theme::html/googletag.phtml" />
+    </referenceContainer>
+
+    before.body.end
+
+    page.wrapper => SHOW BEFORE HEADER TAG
+
+
+-----------------------------------------------------------------
+
+
+----------------------------------------------------------------------
+ultimate after head tag :
+
+By default magento 2 use root.phtml file to setup head content accordingly, which is located in vendor/magento/module-theme/view/base/templates/root.phtml if not override. Here $requireJs varialble is loaded first in head block. And this $requireJs is defined in the render method inside Page class which is located in vendor/magento/frameword/view/Result/Page.php. Where $requireJs hold require.js block. And require.js block is defined in vendor/Magento/module-theme/view/frontend/layout/default.xml
+
+So copy require_js.phtml from vendor/magento/module-theme/view/frontend/templates/page/js and save it inside your theme app/design/frontend/{VENDOR}/{THEME_NAME}/Magento_Theme/templates/page/js/
+
+<script>
+    console.log("I'm loaded!");
+
+    var require = {
+        "baseUrl": "<?php /* @escapeNotVerified */ echo $block->getViewFileUrl('/') ?>"
+    };
+</script>
+
+app/design/frontend/{theme_name}/Magento_Theme/layout/default.xml :
+
+<referenceBlock name="require.js">
+    <action method="setTemplate">
+        <argument name="template" xsi:type="string">Custom_Module::success/head.phtml</argument>
+    </action>
+</referenceBlock> 
+
+
+and inside app/design/frontend/{theme_name}/Magento_Theme/templates/success/head.phtml add you code :
+
+<script>
+    console.log("I'm loaded!");
+    var require = {
+        "baseUrl": "<?php /* @escapeNotVerified */ echo $block->getViewFileUrl('/') ?>"
+    };
+</script>
+----------------------------------------------------------------------
+
+
+==========================================================================================
+INSTALL SCHEMA TO CREATE TABLE
+
+--------------------------
+namespace Dynamic\Btxmyfiles\Setup;
+
+use Magento\Framework\Setup\InstallSchemaInterface;
+use Magento\Framework\Setup\ModuleContextInterface;
+use Magento\Framework\Setup\SchemaSetupInterface;
+use Magento\Framework\DB\Ddl\Table;
+use Magento\Framework\DB\Adapter\AdapterInterface;
+
+class InstallSchema implements InstallSchemaInterface
+{
+    public function install(SchemaSetupInterface $setup, ModuleContextInterface $context)
+    {
+        $installer = $setup;
+
+        $installer->startSetup();
+        
+        $integration = $installer->getTable('btx_myfiles');
+
+
+        if (!$installer->tableExists($integration)) {
+            $resellerTable = $installer->getConnection()
+                ->newTable($integration)
+                ->addColumn(
+                    'id',
+                    Table::TYPE_INTEGER,
+                    null,
+                    ['identity' => true, 'unsigned' => true, 'nullable' => false, 'primary' => true],
+                    'Entity ID'
+                )->addColumn(
+                    'customer_id',
+                    Table::TYPE_INTEGER,
+                    null,
+                    ['unsigned' => true, 'nullable' => false],
+                    'Customer Id'
+                )->addColumn(
+                    'file_name',
+                    Table::TYPE_TEXT,
+                    255,
+                    ['nullable' => false],
+                    'Uploaded File'
+                )->addColumn(
+                    'file_path',
+                    Table::TYPE_TEXT,
+                    255,
+                    ['nullable' => false],
+                    'Uploaded File'
+                )->addColumn(
+                    'created_at',
+                    Table::TYPE_TIMESTAMP,
+                    null,
+                    ['nullable' => false, 'default' => Table::TIMESTAMP_INIT],
+                    'Created At'
+                )->setComment('BTX MyFiles');
+
+            $installer->getConnection()->createTable($resellerTable);
+        }
+
+        $installer->endSetup();
+
+    }
+}
+
+
+---------------------------
+
+INSTALL SCHEMA TO DROP TABLE
+
+-----------------------------
+
+-----------------------------
+
+
+INSTALL SCHEMA TO CREATE ATTRIBUTE 
+
+//ORDER
+
+
+//CUSTOMER
+
+
+//PRODUCT
+
+----------------------------------
+
+
+
+----------------------------------
+
+==================================================================
+File List
+vendor/magento/module-catalog-search/Model/Adapter/Mysql/Aggregation/DataProvider.php
+
+
+
+
+==================================================================
+
+
+FLASH MESSAGE DESTROY COOKIE MESSAGES
+
+$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+$_cookieManager=$objectManager->create('\Magento\Framework\Stdlib\CookieManagerInterface');
+$_cookieManager->deleteCookie('mage-messages');
+
+===================================================================
+
+======================================================================
+CALLED OBSERVER ON EVENT IN events.xml
+
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
+    <event name="cataloginventory_stock_item_save_after">
+	    <observer name="cataloginventorysave" instance="Dynamic\Btxmyfiles\Observer\Notifier" />
+	</event>
+</config>
+
+In observer file :
+
+use Magento\Framework\Event\ObserverInterface;
+
+class Notifier implements ObserverInterface
+{    
+    public function execute(\Magento\Framework\Event\Observer $observer)
+    {
+       	$stockItem = $observer->getEvent()->getItem();
+        $qty=$stockItem->getQty(); // for qty
+        $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+    	$storeManager = $objectManager->get('Magento\Store\Model\StoreManagerInterface'); 
+		$currentStore = $storeManager->getStore()->getId();
+		$action = $objectManager->create('Magento\Catalog\Model\Product\Action');
+		$eavConfig=$objectManager->create('\Magento\Eav\Model\Config');
+		$attribute = $eavConfig->getAttribute('catalog_product', 'stock');
+		
+        if($qty==0 || $stockItem->getIsInStock() ==0){
+        	//update attribute value stock as no
+        	$option_id = $attribute->getSource()->getOptionId('No');
+        	$action->updateAttributes([$stockItem->getProductId()], array('stock' => $option_id), $currentStore);
+        }
+        if($qty > 0 && $stockItem->getIsInStock() ==1){
+        	$option_id = $attribute->getSource()->getOptionId('Yes');
+        	$action->updateAttributes([$stockItem->getProductId()], array('stock' => $option_id), $currentStore);
+        }
+       return;
+    }   
+}
+======================================================================
+
+
+ADD SCRIPT TO HEAD AND FOOTER
+
+CONTENT -> DESIGN -> CONFIGURATION -> EDIT THEME -> HTML HEAD AND FOOTER
+
+
+=========================================================================
+
+/*------------------------------------------------------------------------------------
+
+ADD LINK TO CUSTOMER NAVIGATION
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceBlock name="customer_account_navigation">
+            <block class="Magento\Framework\View\Element\Html\Link\Current" name="demo-link">
+                <arguments>
+                    <argument name="path" xsi:type="string">reseller/manage</argument>
+                    <argument name="label" xsi:type="string" translate="true">Seller Information</argument>
+                    <argument name="sortOrder" xsi:type="number">230</argument>
+                </arguments>
+            </block>
+        </referenceBlock>
+    </body>
+</page>
+
+*/------------------------------------------------------------------------------------
+
+*/-------------------------------------------------------------------------------------------------
+CREATE CUSTOM ATTRIBUTE OF ORDEE AND BIND DATA IN ORDER GRID USING OBSERVER BEFORE ORDER SAVE
+
+DEMO : http://192.168.0.36/magento/m216/admin/
+
+https://www.yereone.com/magento-2-how-to-add-new-order-attribute/
+
+*/-------------------------------------------------------------------------------------------------
+
+
+*/-------------------------------------------------------------------------------------------------
+CUSTOM EMAIL TEMPLATE SET FOR ORDER
+
+https://devdocs.magento.com/guides/v2.0/frontend-dev-guide/templates/template-email.html
+*/-------------------------------------------------------------------------------------------------
+
+
+*/-------------------------------------------------------------------------------------------------
+CURRENCY SYMBOL
+ $objectManager = \Magento\Framework\App\ObjectManager::getInstance(); $storeManager = $objectManager->get('Magento\Store\Model\StoreManagerInterface'); $currencyCode = $storeManager->getStore()->getCurrentCurrencyCode(); $currency = $objectManager->create('Magento\Directory\Model\CurrencyFactory')->create()->load($currencyCode);
+ $currencySymbol = $currency->getCurrencySymbol();
+*/-------------------------------------------------------------------------------------------------
+
+
+*/-------------------------------------------------------------------------------------------------
+CUSTOM EMAIL TEMPLATE FOR ORDERS
+
+
+
+CUSTOM CONTACT FORM
+
+*/-------------------------------------------------------------------------------------------------
+
+
+*/-------------------------------------------------------------------------------------------------
+IN CUSTOM ADMIN GRID SET A LINK
+
+$this->addColumn(
+            'info',
+            [
+                'header' => __('info'),
+                'index' => 'info',
+                'class' => 'info',
+                'type' => 'link',
+                'renderer' => \Dynamic\Test\Block\Adminhtml\Renderer\Customername::class
+            ]
+        );
+
+IN CUSTOM ADMIN GRID SHOW AN IMAGE
+
+ $this->addColumn(
+            'image',
+            array(
+                'header' => __('Image'),
+                'index' => 'image',
+                'renderer'  => '\Dynamic\Test\Block\Adminhtml\Renderer\Image',
+            )
+        );
+
+IN CUSTOM ADMIN GRID SET A VIEW ACTION
+$this->addColumn(
+            'edit',
+            [
+                'header' => __('View'),
+                'type' => 'action',
+                'getter' => 'getId',
+                'actions' => [
+                    [
+                        'caption' => __('View'),
+                        'url' => [
+                            'base' => '*/*/edit'
+                        ],
+                        'field' => 'id'
+                    ]
+                ],
+                'filter' => false,
+                'sortable' => false,
+                'index' => 'stores',
+                'header_css_class' => 'col-action',
+                'column_css_class' => 'col-action'
+            ]
+        );
+
+
+*/-------------------------------------------------------------------------------------------------
+
+*/-------------------------------------------------------------------------------------------------
+You can configure the option by following below path in Magento 2.x admin.
+
+Stores -> Configuration -> General (Left side) -> Design (section) -> Search Engine Robots -> Default Robots (Select)-> Select
+
+INDEX, FOLLOW
+NOINDEX, FOLLOW
+INDEX, NOFOLLOW
+NOINDEX, NOFOLLOW
+*/--------------------------------------------------------------------------------------------------
+
+*/--------------------------------------------------------------------------------------------------
+Configuration Customer as per store front register per website
+
+Store -> Configuration -> Customer -> Customer Configuration -> Account Share per website is for per website customer info can be share.
+
+*/--------------------------------------------------------------------------------------------------
+
+*/--------------------------------------------------------------------------------------------------
+robots.txt
+
+https://developers.google.com/search/reference/robots_meta_tag
+
+
+<meta name="robots" content="noindex, nofollow">
+<meta name="robots" content="nofollow">
+<meta name="googlebot" content="noindex">
+*/--------------------------------------------------------------------------------------------------
